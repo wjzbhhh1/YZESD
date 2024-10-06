@@ -20,7 +20,7 @@ local Key = Tab:AddSection({
 
 local Key = "123456" -- 你的密钥
 
-function k()
+function k(loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))())
     -- 验证成功后的功能    
     print("功能加载完成")
 end
