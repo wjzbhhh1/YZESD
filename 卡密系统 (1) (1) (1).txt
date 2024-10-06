@@ -68,7 +68,7 @@ CardLabel.BorderSizePixel = 0
 CardLabel.Position = UDim2.new(0.232500002, -75, 0.430000007, 0)
 CardLabel.Size = UDim2.new(0, 144, 0, 36)
 CardLabel.Font = Enum.Font.SourceSansBold
-CardLabel.Text = "请输入卡密：3"
+CardLabel.Text = "请输入卡密："
 CardLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 CardLabel.TextScaled = true
 CardLabel.TextSize = 14.000
@@ -148,7 +148,7 @@ CardSystemUICorner.Parent = CardSystem
 -- 处理卡密的代码
 SubmitButton.MouseButton1Click:Connect(function()
 local cardCode = CardEntry.Text
-if cardCode == "猎物,小吉祥" then-- ""内设置您的卡密
+if cardCode == "3" then-- ""内设置您的卡密
     ResultLabel.Text = "卡密验证成功！"
     CorrectIncorrectImageLabel.Image = "rbxassetid://12517387637"-- 设置卡密系统正确图片的ID
     wait(1)-- 关掉卡密系统的事件
@@ -169,4 +169,4 @@ else
     ResultLabel.Text = ""
     CorrectIncorrectImageLabel.Image = ""
 end
-end)
+end)
