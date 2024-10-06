@@ -40,17 +40,17 @@ Start = tick()
 Heartbeat:Connect(HeartbeatUpdate)
 
 local ui = loadstring(game:HttpGet("https://pastebin.com/raw/Ey3CpCHS"))();        
-local win = ui:new("丁丁脚本VB")
+local win = ui:new("YZESD")
 --
 local UITab1 = win:Tab("『信息』",'6035145364')
 
 local about = UITab1:section("『信息』",true)
 
 
-about:Label("作者QQ：198436746")
-about:Label("qq群：930667114")
-about:Label("作者：丁丁")
-about:Label("脚本疯狂优化中")
+about:Label("作者QQ：477409523")
+about:Label("qq群：914146161")
+about:Label("作者：海的那边是什么")
+about:Label("疯狂加载中")
 about:Label("你的注入器:"..identifyexecutor())
 about:Label("你的用户名:"..game.Players.LocalPlayer.Character.Name)
 
