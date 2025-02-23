@@ -1,9 +1,6 @@
--- ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ImageDisplayGui"
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- ImageLabel
 local imageLabel = Instance.new("ImageLabel")
 imageLabel.Name = "DisplayImage"
 imageLabel.Parent = screenGui
@@ -12,8 +9,6 @@ imageLabel.Position = UDim2.new(0.25, 0, 0.25, 0)
 imageLabel.BackgroundTransparency = 1
 imageLabel.Image = "https://saucenao.com/edit.php?f=1&image=9wuOSx0Ve.jpg" -- 替换为图片ID
 imageLabel.ImageTransparency = 0
-
--- TextButton
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
 closeButton.Parent = screenGui
