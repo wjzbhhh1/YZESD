@@ -7,7 +7,7 @@ imageLabel.Parent = screenGui
 imageLabel.Size = UDim2.new(0.5, 0, 0.5, 0)
 imageLabel.Position = UDim2.new(0.25, 0, 0.25, 0)
 imageLabel.BackgroundTransparency = 1
-imageLabel.Image = "https://saucenao.com/edit.php?f=1&image=9wuOSx0Ve.jpg" -- 替换为图片ID
+imageLabel.Image = "file:///storage/emulated/0/Android/data/mark.via/cache/content/Image_14835625422883.jpg" -- 替换为图片ID
 imageLabel.ImageTransparency = 0
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
