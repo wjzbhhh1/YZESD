@@ -7,7 +7,7 @@ imageLabel.Parent = screenGui
 imageLabel.Size = UDim2.new(0.5, 0, 0.5, 0)
 imageLabel.Position = UDim2.new(0.25, 0, 0.25, 0)
 imageLabel.BackgroundTransparency = 1
-imageLabel.Image = "file:///storage/emulated/0/Android/data/mark.via/cache/content/Image_14835625422883.jpg" -- 替换为图片ID
+imageLabel.Image = "https://m.baidu.com/sf/vsearch?pd=image_content&word=原神横屏&tn=vsearch&atn=mediacy&fr=tab&sa=vs_tab&imgtype=0&imgcontent={"materialQuery":"","subjectJson":{}}&imgpn=2&imgspn=0&mediacyKey=undefined&tt=1&di=7466852183703552001&pi=0&cs=3524133884,3047267941&bdtype=0&objurl=https://i1.hdslb.com/bfs/archive/4ab07b48ef84fed0be591f5f6b25a3e6ef62db60.jpg&imgos=1018751685,2014092273&imgis=0,0&isRecFrClick=0"
 imageLabel.ImageTransparency = 0
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
