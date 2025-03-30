@@ -308,7 +308,7 @@ end
 Tab:AddButton({
   Name = "旋转",
   Callback = function()
-    loadstring(game:HttpGet('loadstring(game:HttpGet("https://raw.githubusercontent.com/JsYb666/TUIXUI_qun-809771141/refs/heads/TUIXUI/fling"))()', true))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/JsYb666/TUIXUI_qun-809771141/refs/heads/TUIXUI/fling', true))()
   end
 })
 
