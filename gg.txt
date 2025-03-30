@@ -1,0 +1,40 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("StarterGui")
+
+local userAgreed = false
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AgreementGui"
+ScreenGui.Parent = CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 400, 0, 200)
+frame.Position = UDim2.new(0.5, -200, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Parent = ScreenGui
+
+local label = Instance.new("TextLabel")
+label.Text = "Welcome to this script! Please read the following notice:\n\nThis script is for entertainment use only. Please use it safely."
+label.Size = UDim2.new(0, 380, 0, 150)
+label.Position = UDim2.new(0.5, -190, 0.5, -75)
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextWrapped = true
+label.Parent = frame
+
+local agreeButton = Instance.new("TextButton")
+agreeButton.Text = "I Agree"
+agreeButton.Size = UDim2.new(0, 100, 0, 30)
+agreeButton.Position = UDim2.new(0.5, -50, 0.8, -15)
+agreeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+agreeButton.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+agreeButton.Parent = frame
+
+agreeButton.MouseButton1Click:Connect(function()
+    userAgreed = true
+    ScreenGui:Destroy()
+end)
+
+while not userAgreed do
+    wait()
+end
