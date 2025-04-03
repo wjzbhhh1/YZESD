@@ -130,6 +130,17 @@ Tab:AddButton({
   	end
 
 })
+Tab:AddButton({
+
+	Name = "点击骂群主(复制)",
+
+	Callback = function()
+
+     setclipboard("滚😡😡😡")
+
+  	end
+
+})
 local Tab = Window:MakeTab({
 	Name = "🥂鲨口求生2",
 	Icon = "rbxassetid://",
