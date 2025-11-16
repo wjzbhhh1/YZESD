@@ -38,9 +38,8 @@ about2:Toggle("夜视", "Toggle", false, function(value)
     end
 end)
 
-local about2 = UITab2:section("【功能】", true)
-
 about2:Button("飞行", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/dingding123hhh/tt/main/jm%E9%A3%9E..lua"))()
 end)
+
 
