@@ -1,127 +1,70 @@
-local WindUI = loadstring(game:HttpGet('https://github.com/Footagesus/WindUI/releases/latest/download/main.lua'))()
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-local Window =
-    WindUI:CreateWindow(
-    {
-        Title = "TT HUB",
-        Icon = "door-open",
-        IconThemed = true,
-        Author = "by 喵哉",
-        Folder = "CloudHub",
-        Size = UDim2.fromOffset(300, 350), -- Increased size for new features
-        Transparent = false,
-        Theme = "Dark",
-        User = {
-            Enabled = false,
-            Callback = function()
-                print("clicked")
-            end,
-            Anonymous = false
-        },
-        SideBarWidth = 200,
-        ScrollBarEnabled = false,
-        HideSearchBar = false,
-        Background = getcustomasset("LENGPICTURE.jpg")
+local Window = WindUI:CreateWindow({
+    Title = "TT HUB",
+    Icon = "code",
+    Author = "by 喵哉",
+    Folder = "mtaskh",
+    Size = UDim2.fromOffset(850, 950),
+    Theme = "Light",
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    Resizable = true,
+    Background = "https://raw.githubusercontent.com/mtaskhh/script/refs/heads/Other/retouch_2025101321572104.jpg",
+    Transparent = true,
+    BackgroundImageTransparency = 0.5,
+    User = {
+    Enabled = true,
+    Callback = function()
+        WindUI:Notify({
+            Title = "点击了自己",
+            Content = "是的,你很好看", 
+            Duration = 3,
+            Icon = "sun"
+        })
+    end,
+    Anonymous = false
+}
 })
 
-Window:SetBackgroundImage("")
+Window:SetBackgroundImageTransparency(0.5)
 
-Window:SetToggleKey(Enum.KeyCode.F)
+Window:CreateTopbarButton("ThemeToggle", "moon", function()
+    local currentTheme = WindUI:GetCurrentTheme()
+    if currentTheme == "Light" then
+        WindUI:SetTheme("Dark")
+        WindUI:Notify({
+            Title = "已切换为光亮黑暗主题",
+            Content = "",
+            Duration = 3,
+            Icon = "geist:moon"
+        })
+    else
+        WindUI:SetTheme("Light")
+        WindUI:Notify({
+            Title = "已切换为光亮主题",
+            Content = "",
+            Duration = 3,
+            Icon = "geist:sun"
+        })
+    end
+end, 990)
 
-Window.EditOpenButton(Window, {
-    Title = 'AroelHub',
-    Icon = 'monitor',
-    CornerRadius = UDim.new(0, 16),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromHex('000000'), Color3.fromHex('FFFFFF')),
-    Enabled = false,
+WindUI:SetNotificationLower(true)
+
+Window:EditOpenButton({
+    Title = "打开不止脚本",
+    Icon = "lucide:scroll-text",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 6,
+    Color = ColorSequence.new(
+Color3.fromHex("ADD8E6"),
+Color3.fromHex("FFFFFF")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
     Draggable = true,
 })
-
-local _ScreenGui = Instance.new('ScreenGui')
-
-_ScreenGui.Name = 'AroelHubToggle'
-_ScreenGui.IgnoreGuiInset = true
-_ScreenGui.ResetOnSpawn = false
-_ScreenGui.Parent = game.CoreGui
-
-local _ImageButton = Instance.new('ImageButton')
-
-_ImageButton.Size = UDim2.new(0, 60, 0, 60)
-_ImageButton.Position = UDim2.new(0, 70, 0, 70)
-_ImageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-_ImageButton.Image = 'rbxassetid://135770837294106'
-_ImageButton.Name = 'AroelHubButton'
-_ImageButton.AutoButtonColor = true
-_ImageButton.Parent = _ScreenGui
-
-local _UICorner = Instance.new('UICorner')
-
-_UICorner.CornerRadius = UDim.new(0, 12)
-_UICorner.Parent = _ImageButton
-
-local _UIStroke = Instance.new('UIStroke')
-
-_UIStroke.Thickness = 2
-_UIStroke.Color = Color3.fromRGB(0, 0, 0)
-_UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-_UIStroke.Parent = _ImageButton
-
-local u28 = nil
-local u29 = nil
-local u30 = nil
-local u31 = nil
-
-_ImageButton.InputBegan:Connect(function(p32)
-    if p32.UserInputType == Enum.UserInputType.MouseButton1 or p32.UserInputType == Enum.UserInputType.Touch then
-        u28 = true
-        u30 = p32.Position
-        u31 = _ImageButton.Position
-
-        p32.Changed:Connect(function()
-            if p32.UserInputState == Enum.UserInputState.End then
-                u28 = false
-            end
-        end)
-    end
-end)
-_ImageButton.InputChanged:Connect(function(p33)
-    if p33.UserInputType == Enum.UserInputType.MouseMovement or p33.UserInputType == Enum.UserInputType.Touch then
-        u29 = p33
-    end
-end)
-game:GetService('UserInputService').InputChanged:Connect(function(p34)
-    if p34 == u29 and u28 then
-        local v35 = p34.Position - u30
-        local v36 = u31.X.Offset + v35.X
-        local v37 = u31.Y.Offset + v35.Y
-        local _ViewportSize = workspace.CurrentCamera.ViewportSize
-        local v39 = math.clamp(v36, 0, _ViewportSize.X - _ImageButton.AbsoluteSize.X)
-        local v40 = math.clamp(v37, 0, _ViewportSize.Y - _ImageButton.AbsoluteSize.Y)
-
-        _ImageButton.Position = UDim2.new(u31.X.Scale, v39, u31.Y.Scale, v40)
-    end
-end)
-
-local u41 = false
-
-_ImageButton.MouseButton1Click:Connect(function()
-    u41 = not u41
-
-    pcall(function()
-        if u41 then
-            u20:Open()
-        else
-            u20:Close()
-        end
-    end)
-end)
-
-local v42 = u20
-
-u20.OnDestroy(v42, function()
-    _ScreenGui:Destroy()
-end)
 
 local infoTab = Window:Tab({Title = "信息", Icon = "user", Locked = false})
 
@@ -4787,5 +4730,6 @@ WindUI:Notify({
     Duration = 3,
     Icon = "sun"
 })
+
 
 
