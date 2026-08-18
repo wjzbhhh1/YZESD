@@ -1,4 +1,625 @@
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua", true))()
+end)
+
+if not success or not WindUI then
+    warn("WindUI 加载失败，请检查网络")
+    return
+end
+-- ================================
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "WelcomeTextUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = lp.PlayerGui
+
+local textFrame = Instance.new("Frame")
+textFrame.Size = UDim2.new(0, 320, 0, 60)
+textFrame.Position = UDim2.new(0.82, 0, 0.08, 0)
+textFrame.BackgroundTransparency = 1
+textFrame.Parent = gui
+
+local welcomeText = Instance.new("TextLabel")
+welcomeText.Size = UDim2.new(1,0,0.5,0)
+welcomeText.BackgroundTransparency = 1
+welcomeText.Text = "欢迎鹿脚本用户"
+welcomeText.Font = Enum.Font.GothamBold
+welcomeText.TextSize = 24
+welcomeText.Parent = textFrame
+
+local timeText = Instance.new("TextLabel")
+timeText.Size = UDim2.new(1,0,0.5,0)
+timeText.Position = UDim2.new(0,0,0.5,0)
+timeText.BackgroundTransparency = 1
+timeText.TextSize = 20
+timeText.Font = Enum.Font.Gotham
+timeText.Parent = textFrame
+
+task.spawn(function()
+    local hue = 0
+    local fade = 0
+    local add = 0.02
+    while task.wait(0.03) do
+        hue += 0.008
+        if hue >= 1 then hue = 0 end
+        fade += add
+        if fade >= 1 or fade <= 0 then
+            add = -add
+        end
+        local rainbowColor = Color3.fromHSV(hue,1,1)
+        welcomeText.TextColor3 = rainbowColor
+        timeText.TextColor3 = rainbowColor
+        welcomeText.TextTransparency = fade
+        timeText.TextTransparency = fade
+        local currentTime = os.date("%H:%M:%S")
+        timeText.Text = "当前时间："..currentTime
+    end
+end)
+
+local Players = game:GetService("Players")
+
+local CONFIGS = {
+    ["kjkalt"] = {
+        Text = "LY Team",
+        ColorStart = Color3.fromRGB(255, 215, 0), 
+        ColorEnd = Color3.fromRGB(255, 69, 0)     
+    },
+    ["godwhy532"] = {
+        Text = "LY Team",
+        ColorStart = Color3.fromRGB(148, 0, 211), 
+        ColorEnd = Color3.fromRGB(0, 191, 255)    
+    }
+}
+
+local function toHex(color)
+    return string.format("%02x%02x%02x",
+        math.floor(color.R * 255),
+        math.floor(color.G * 255),
+        math.floor(color.B * 255)
+    )
+end
+
+local function createGradientText(text, startColor, endColor)
+    local len = #text
+    if len <= 1 then
+        return string.format('<font color="#%s">%s</font>', toHex(startColor), text)
+    end
+    local result = {}
+    for i = 1, len do
+        local char = text:sub(i, i)
+        local t = (i - 1) / (len - 1)
+        local r = startColor.R + (endColor.R - startColor.R) * t
+        local g = startColor.G + (endColor.G - startColor.G) * t
+        local b = startColor.B + (endColor.B - startColor.B) * t
+        local color = Color3.new(r, g, b)
+        table.insert(result, string.format('<font color="#%s">%s</font>', toHex(color), char))
+    end
+    return table.concat(result)
+end
+
+local function setupPlayer(player)
+    if not player or player.Parent ~= Players then return end
+    local config = CONFIGS[player.Name]
+    if not config then return end
+
+    local function addTag()
+        spawn(function()
+            local character = player.Character
+            if not character then
+                local success, result = pcall(function()
+                    character = player.CharacterAdded:Wait(10)
+                end)
+                if not success or not character then return end
+            end
+
+            local head = character:WaitForChild("Head", 5)
+            if not head then return end
+
+            local old = head:FindFirstChild("LYTeamTag")
+            if old then old:Destroy() end
+
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "LYTeamTag"
+            billboard.Size = UDim2.new(0, 280, 0, 60)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.AlwaysOnTop = true
+            billboard.MaxDistance = 120
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.RichText = true
+            label.TextScaled = true
+            label.Font = Enum.Font.GothamBold
+            label.TextStrokeColor3 = Color3.new(0, 0, 0)
+            label.TextStrokeTransparency = 0.4
+            label.Text = createGradientText(config.Text, config.ColorStart, config.ColorEnd)
+
+            label.Parent = billboard
+            billboard.Parent = head
+        end)
+    end
+
+    if player.Character then
+        addTag()
+    end
+
+    player.CharacterAdded:Connect(addTag)
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    setupPlayer(player)
+end
+
+Players.PlayerAdded:Connect(setupPlayer)
+local getasset = getcustomasset or getsynasset
+_G.players = _G.players or {}
+local players = _G.players
+
+local function playURL(url, id, vol, loop)
+    if players[id] then
+        players[id]:Stop()
+        players[id]:Destroy()
+        players[id] = nil
+    end
+    
+    local ext = url:lower():match("%.wav") and "wav" or "mp3"
+    local fname = "aud_" .. id .. "." .. ext
+    
+    if not isfile(fname) then
+        local ok, data = pcall(function() return game:HttpGet(url, true) end)
+        if not ok or not data or #data < 500 then
+            return nil
+        end
+        writefile(fname, data)
+    end
+    
+    local snd = Instance.new("Sound")
+    snd.SoundId = getasset(fname)
+    snd.Volume = vol or 1
+    snd.Looped = loop or false
+    snd.Parent = game:GetService("SoundService")
+    snd:Play()
+    snd.Ended:Connect(function()
+        snd:Destroy()
+        players[id] = nil
+    end)
+    players[id] = snd
+    return snd
+end
+
+_G.playURL = playURL
+_G.stopAudio = function(id)
+    if players[id] then players[id]:Stop(); players[id]:Destroy(); players[id] = nil end
+end
+
+playURL(
+    "https://raw.githubusercontent.com/kxglkidd-blip/roblox/main/%E4%BB%80%E4%B9%88.mp3",
+    "bgm",
+    0.6,
+    false
+)
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local gui = Instance.new("ScreenGui")
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local bg = Instance.new("Frame")
+bg.Size = UDim2.fromScale(1,1)
+bg.BorderSizePixel = 0
+bg.Parent = gui
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,170)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,170,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(128,0,255))
+}
+gradient.Parent = bg
+
+for i = 1,40 do
+	local dot = Instance.new("Frame")
+	dot.Size = UDim2.new(0,math.random(2,6),0,math.random(2,6))
+	dot.Position = UDim2.new(math.random(),0,math.random(),0)
+	dot.BackgroundColor3 = Color3.new(1,1,1)
+	dot.BackgroundTransparency = 0.7
+	dot.BorderSizePixel = 0
+	dot.Parent = bg
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1,0)
+	corner.Parent = dot
+
+	task.spawn(function()
+		while dot.Parent do
+			local newPos = UDim2.new(math.random(),0,-0.1,0)
+
+			TweenService:Create(
+				dot,
+				TweenInfo.new(16), 
+				{Position = newPos}
+			):Play()
+
+			task.wait(16)
+
+			dot.Position = UDim2.new(math.random(),0,1.1,0)
+		end
+	end)
+end
+
+local glow = Instance.new("ImageLabel")
+glow.Size = UDim2.fromOffset(220,220)
+glow.Position = UDim2.new(.5,-110,.18,-110)
+glow.BackgroundTransparency = 1
+glow.Image = "rbxassetid://5028857084"
+glow.ImageTransparency = .25
+glow.Parent = bg
+
+-- Logo
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.fromOffset(120,120)
+logo.Position = UDim2.new(.5,-60,.18,-60)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://135461405245048"
+logo.Parent = bg
+
+local logoGradient = Instance.new("UIGradient")
+logoGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255,0,0)),
+	ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,127,0)),
+	ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255,255,0)),
+	ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0,255,0)),
+	ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,255,255)),
+	ColorSequenceKeypoint.new(0.83, Color3.fromRGB(0,0,255)),
+	ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255,0,255))
+})
+logoGradient.Parent = logo
+
+task.spawn(function()
+	while logo.Parent do
+		logo.Rotation += 1.5
+		task.wait(0.01)
+	end
+end)
+
+task.spawn(function()
+	while logo.Parent do
+		logoGradient.Rotation += 2
+		task.wait(0.02)
+	end
+end)
+
+task.spawn(function()
+	local t = 0
+	while logo.Parent do
+		t += 0.05
+
+		local size = 120 + math.sin(t) * 12
+
+		logo.Size = UDim2.fromOffset(size, size)
+		logo.Position = UDim2.new(
+			0.5,
+			-size/2,
+			0.18,
+			-size/2
+		)
+
+		task.wait()
+	end
+end)
+
+TweenService:Create(
+	glow,
+	TweenInfo.new(
+		16,
+		Enum.EasingStyle.Linear,
+		Enum.EasingDirection.InOut,
+		-1
+	),
+	{Rotation = -360}
+):Play()
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,60)
+title.Position = UDim2.new(0,0,.37,0)
+title.BackgroundTransparency = 1
+title.Text = "鹿脚本"
+title.Font = Enum.Font.GothamBlack
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = bg
+
+local percent = Instance.new("TextLabel")
+percent.Size = UDim2.new(0,150,0,40)
+percent.Position = UDim2.new(.5,-75,.56,-20)
+percent.BackgroundTransparency = 1
+percent.TextColor3 = Color3.new(1,1,1)
+percent.Font = Enum.Font.GothamBold
+percent.TextScaled = true
+percent.Text = "0%"
+percent.Parent = bg
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(0,400,0,30)
+status.Position = UDim2.new(.5,-200,.62,0)
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.new(1,1,1)
+status.Font = Enum.Font.Gotham
+status.TextScaled = true
+status.Text = "Loading."
+status.Parent = bg
+
+local barBack = Instance.new("Frame")
+barBack.Size = UDim2.new(0,500,0,18)
+barBack.Position = UDim2.new(.5,-250,.7,0)
+barBack.BackgroundTransparency = .7
+barBack.BackgroundColor3 = Color3.new(1,1,1)
+barBack.BorderSizePixel = 0
+barBack.Parent = bg
+
+Instance.new("UICorner",barBack).CornerRadius = UDim.new(1,0)
+
+local bar = Instance.new("Frame")
+bar.Size = UDim2.new(0,0,1,0)
+bar.BorderSizePixel = 0
+bar.Parent = barBack
+
+Instance.new("UICorner",bar).CornerRadius = UDim.new(1,0)
+
+local barGradient = Instance.new("UIGradient")
+barGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(0,255,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+}
+barGradient.Parent = bar
+
+task.spawn(function()
+	while gui.Parent do
+		gradient.Rotation += 0.5
+		task.wait(0.02)
+	end
+end)
+
+local messages = {
+	"加.",
+	"加载",
+	"加载中.",
+	"加载中……",
+	"欢迎使用鹿脚本.",
+	"感谢KXG帮助"
+}
+
+for i = 0,100 do
+	bar.Size = UDim2.new(i/100,0,1,0)
+	percent.Text = i.."%"
+
+	if i == 15 then status.Text = messages[2] end
+	if i == 35 then status.Text = messages[3] end
+	if i == 55 then status.Text = messages[4] end
+	if i == 75 then status.Text = messages[5] end
+	if i == 90 then status.Text = messages[6] end
+
+	task.wait(0.06)
+end
+
+status.Text = "作者鹿言"
+
+task.wait(2.2) 
+
+for i = 0,1,0.015 do
+	bg.BackgroundTransparency = i
+	title.TextTransparency = i
+	status.TextTransparency = i
+	percent.TextTransparency = i
+	bar.BackgroundTransparency = i
+	barBack.BackgroundTransparency = 0.7 + i * 0.3
+	logo.ImageTransparency = i
+	glow.ImageTransparency = i
+	task.wait(0.03)
+end
+
+gui:Destroy()
+local FLOW_SPEED = 5.5
+local BORDER_THICKNESS = 1.7
+local FIXED_FONT = Enum.Font.SourceSansBold
+local WhiteFlowTheme = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromHex("1A0101")),
+	ColorSequenceKeypoint.new(0.25, Color3.fromHex("5A0A0A")),
+	ColorSequenceKeypoint.new(0.45, Color3.fromHex("C80000")),
+	ColorSequenceKeypoint.new(0.55, Color3.fromHex("FFFFFF")),
+	ColorSequenceKeypoint.new(0.75, Color3.fromHex("B02B2B")),
+	ColorSequenceKeypoint.new(1.00, Color3.fromHex("1F0303")),
+})
+local borderAnimation
+local borderInitialized = false
+
+function gradient(text, startColor, endColor)
+    local result = ""
+    local chars = {}
+    for uchar in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        table.insert(chars, uchar)
+    end
+    local length = #chars
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = startColor.R + (endColor.R - startColor.R) * t
+        local g = startColor.G + (endColor.G - startColor.G) * t
+        local b = startColor.B + (endColor.B - startColor.B) * t
+        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', 
+            math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), chars[i])
+    end
+    return result
+end
+
+local function StartFontEnforcer()
+    if not Window or not Window.UIElements then 
+        task.wait(1)
+        if not Window or not Window.UIElements then return end
+    end  
+    local MainFrame = Window.UIElements.Main
+    local function setFont(instance)
+        if instance:IsA("TextLabel") or instance:IsA("TextButton") or instance:IsA("TextBox") then
+            pcall(function() 
+                instance.Font = FIXED_FONT 
+                instance.RichText = true
+            end)
+        end
+    end
+    for _, child in ipairs(MainFrame:GetDescendants()) do
+        setFont(child)
+    end
+    MainFrame.DescendantAdded:Connect(function(child)
+        setFont(child)
+    end)
+end
+local function createBorder(window)
+    if not window or not window.UIElements then
+        task.wait(1)
+        if not window or not window.UIElements then return nil end
+    end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    if mainFrame:FindFirstChild("FlowBorder") then return mainFrame.FlowBorder end    
+    if not mainFrame:FindFirstChildOfClass("UICorner") then
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 16)
+        corner.Parent = mainFrame
+    end    
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "FlowBorder"
+    stroke.Thickness = BORDER_THICKNESS
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.LineJoinMode = Enum.LineJoinMode.Round
+    stroke.Enabled = true
+    stroke.Parent = mainFrame    
+    local gradient = Instance.new("UIGradient")
+    gradient.Name = "StreamEffect"
+    gradient.Color = WhiteFlowTheme
+    gradient.Rotation = 0
+    gradient.Parent = stroke    
+    return stroke
+end
+local function startBorderAnimation(window)
+    if not window or not window.UIElements then return nil end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    local stroke = mainFrame:FindFirstChild("FlowBorder")
+    if not stroke then return nil end    
+    local gradient = stroke:FindFirstChild("StreamEffect")
+    if not gradient then return nil end    
+    if borderAnimation then borderAnimation:Disconnect() borderAnimation = nil end    
+    local animation
+    animation = game:GetService("RunService").Heartbeat:Connect(function()
+        if not stroke or stroke.Parent == nil then
+            animation:Disconnect()
+            return
+        end
+        gradient.Rotation = (tick() * FLOW_SPEED * 20) % 360
+    end)
+    borderAnimation = animation
+    return animation
+end
+
+Window = WindUI:CreateWindow({
+    Title = gradient("鹿脚本｜v1", Color3.fromHex("#00FFAA"), Color3.fromHex("#00FFFF")), 
+    Author = gradient("作者:LY Team", Color3.fromHex("#00FFAA"), Color3.fromHex("#00AAFF")),
+    IconThemed = true,
+    Folder = "Atomic",
+   Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 120,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+--    Background = "video:https://raw.githack.com/Potato5466794/LUAUmisc/refs/heads/main/Video_1770894406219_889.mp4",
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+        end
+    },
+})
+task.spawn(function()
+    task.wait(0.4)
+    local mainFrame = Window.UIElements.Main
+    for _,v in ipairs(mainFrame:GetChildren()) do
+        if v.Name == "DynWall" or v.Name == "SimOverlay" then
+            v:Destroy()
+        end
+    end
+
+    local dynBg = Instance.new("ImageLabel")
+    dynBg.Name = "DynWall"
+    dynBg.Size = UDim2.new(1,0,1,0)
+    dynBg.Position = UDim2.new(0,0,0,0)
+    dynBg.ZIndex = 1
+    dynBg.BackgroundTransparency = 1
+    dynBg.ImageTransparency = 0
+    dynBg.ScaleType = Enum.ScaleType.Crop
+    dynBg.Active = false
+    dynBg.Parent = mainFrame
+
+    local simOverlay = Instance.new("Frame")
+    simOverlay.Name = "SimOverlay"
+    simOverlay.Size = UDim2.new(1,0,1,0)
+    simOverlay.Position = UDim2.new(0,0,0,0)
+    simOverlay.ZIndex = 2
+    simOverlay.BackgroundColor3 = Color3.new(0,0,0)
+    simOverlay.BackgroundTransparency = 0.75 
+    simOverlay.BorderSizePixel = 0
+    simOverlay.Active = false
+    simOverlay.Parent = mainFrame
+
+    local imgs = {
+        "rbxassetid://77280610630148",
+        "rbxassetid://114346085585304",
+        "rbxassetid://82447398942811",
+        "rbxassetid://103379824564407",
+        "rbxassetid://103793685619227",
+        "rbxassetid://104453334623490",
+        "rbxassetid://108628612995376",
+        "rbxassetid://84289240337696",
+        "rbxassetid://97142671633928",
+        "rbxassetid://82649740800128",
+        "rbxassetid://140579500222909",
+        "rbxassetid://136318232184282",
+        "rbxassetid://71386021096053",
+        "rbxassetid://91591266845531",
+        "rbxassetid://85046140063752",
+        "rbxassetid://129091885616473",
+        "rbxassetid://87152390900452",
+        "rbxassetid://82167071303520",
+        "rbxassetid://75428673382182",
+        "rbxassetid://85345924479580",
+        "rbxassetid://107368813418031"
+    }
+    local cur = 1
+    while dynBg.Parent do
+        pcall(function() dynBg.Image = imgs[cur] end)
+        cur +=1
+        if cur>#imgs then cur =1 end
+        task.wait(0.15)
+    end
+end)
+task.spawn(function()
+    local hue = 0
+    while task.wait(0.05) do
+        hue += 0.008
+        if hue >= 1 then
+            hue = 0
+        end
+
+        local rainbowColor = Color3.fromHSV(hue, 1, 1)
+
         Window:EditOpenButton({
             Title = "67 鹿脚本 67",
             Icon = "rbxassetid://135461405245048",
@@ -1109,393 +1730,6 @@ if not hasDrawing then
     circleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     circleStroke.Parent = circleFrame
 end
-
--- ========== 彩虹动画 ==========
-local rainbowConn = RunService.RenderStepped:Connect(function()
-    if not Aimbot.RainbowCircle or not Aimbot.ShowCircle or not Aimbot.Enabled then return end
-    local hue = (tick() % 3) / 3
-    local color = Color3.fromHSV(hue, 1, 1)
-    if fovCircle then fovCircle.Color = color end
-    if circleStroke then circleStroke.Color = color end
-end)
-
--- ========== 核心：找最近目标 ==========
-local function getClosestTarget()
-    local cam = Workspace.CurrentCamera
-    if not cam then return nil end
-    if not LocalPlayer then return nil end
-    local char = LocalPlayer.Character
-    if not char then return nil end
-    local myRoot = char:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return nil end
-
-    local center = cam.ViewportSize / 2
-    local closest = nil
-    local minDist = Aimbot.FOV
-
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr == LocalPlayer then continue end
-        local tChar = plr.Character
-        if not tChar then continue end
-        local head = tChar:FindFirstChild("Head")
-        local hum = tChar:FindFirstChildOfClass("Humanoid")
-        if not head or not hum then continue end
-
-        if Aimbot.DeadCheck and hum.Health <= 0 then continue end
-        if Aimbot.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team then continue end
-
-        if Aimbot.WallCheck then
-            local rayParams = RaycastParams.new()
-            rayParams.FilterDescendantsInstances = {char}
-            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-            local dir = head.Position - cam.CFrame.Position
-            local result = Workspace:Raycast(cam.CFrame.Position, dir.Unit * 2000, rayParams)
-            if result then
-                local hitModel = result.Instance:FindFirstAncestorWhichIsA("Model")
-                if hitModel ~= tChar then continue end
-            end
-        end
-
-        local pos, onScreen = cam:WorldToViewportPoint(head.Position)
-        if not onScreen then continue end
-        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-        if dist < minDist then
-            minDist = dist
-            closest = head
-        end
-    end
-    return closest
-end
-
--- ========== 主循环（核心修复在这里） ==========
-local aimbotConn = RunService.RenderStepped:Connect(function()
-    local cam = Workspace.CurrentCamera
-    if not cam then return end
-    local center = cam.ViewportSize / 2
-
-    -- 【核心修复】总开关关闭时：强制隐藏圆圈，直接返回，绝不执行后续逻辑
-    if not Aimbot.Enabled then
-        if fovCircle then fovCircle.Visible = false end
-        if circleFrame then circleFrame.Visible = false end
-        return
-    end
-
-    -- 更新圆圈（只有总开关打开时才会执行到这里）
-    if Aimbot.ShowCircle then
-        if fovCircle then
-            fovCircle.Visible = true
-            fovCircle.Position = center
-            fovCircle.Radius = Aimbot.FOV
-            if not Aimbot.RainbowCircle then fovCircle.Color = Aimbot.CircleColor end
-        elseif circleFrame then
-            circleFrame.Visible = true
-            circleFrame.Size = UDim2.new(0, Aimbot.FOV * 2, 0, Aimbot.FOV * 2)
-            circleFrame.Position = UDim2.new(0, center.X, 0, center.Y)
-            if not Aimbot.RainbowCircle then circleStroke.Color = Aimbot.CircleColor end
-        end
-    else
-        if fovCircle then fovCircle.Visible = false end
-        if circleFrame then circleFrame.Visible = false end
-    end
-
-    -- 是否执行自瞄（按住模式判断）
-    local shouldAim = true
-    if not Aimbot.IsMobile and Aimbot.HoldMode then
-        shouldAim = Aimbot.IsHolding
-    end
-
-    if shouldAim then
-        local target = getClosestTarget()
-        if target then
-            cam.CFrame = CFrame.new(cam.CFrame.Position, target.Position)
-        end
-    end
-end)
-
--- ========== 输入监听（按住模式） ==========
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if not Aimbot.Enabled then return end
-    if not Aimbot.HoldMode or Aimbot.IsMobile then return end
-
-    if Aimbot.TriggerMode == "鼠标左键" and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Aimbot.IsHolding = true
-    elseif Aimbot.TriggerMode == "鼠标右键" and input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Aimbot.IsHolding = true
-    elseif Aimbot.TriggerMode == "键盘键" and input.KeyCode == Enum.KeyCode[Aimbot.CustomKey] then
-        Aimbot.IsHolding = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if not Aimbot.HoldMode or Aimbot.IsMobile then return end
-
-    if Aimbot.TriggerMode == "鼠标左键" and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Aimbot.IsHolding = false
-    elseif Aimbot.TriggerMode == "鼠标右键" and input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Aimbot.IsHolding = false
-    elseif Aimbot.TriggerMode == "键盘键" and input.KeyCode == Enum.KeyCode[Aimbot.CustomKey] then
-        Aimbot.IsHolding = false
-    end
-end)
-
--- ========== UI 控件 ==========
-
--- 总开关（默认关闭）
-Tabs.AimTab:Toggle({
-    Title = "启用自定义自瞄",
-    Icon = "check",
-    Default = false,
-    Callback = function(v)
-        Aimbot.Enabled = v
-        if not v then
-            Aimbot.IsHolding = false
-            -- 立即隐藏
-            if fovCircle then fovCircle.Visible = false end
-            if circleFrame then circleFrame.Visible = false end
-        end
-    end
-})
-
--- 总开关热键（默认P，点击可重选）
-Tabs.AimTab:Keybind({
-    Title = "自瞄开关热键（点击重选）",
-    Value = "P",
-    CanChange = true,
-    Callback = function(key)
-        Aimbot.ToggleKey = key
-        Aimbot.Enabled = not Aimbot.Enabled
-        if not Aimbot.Enabled then
-            Aimbot.IsHolding = false
-            if fovCircle then fovCircle.Visible = false end
-            if circleFrame then circleFrame.Visible = false end
-        end
-        WindUI:Notify({
-            Title = "自定义自瞄",
-            Content = (Aimbot.Enabled and "✅ 已开启" or "❌ 已关闭") .. " [热键: " .. key .. "]",
-            Duration = 2
-        })
-    end
-})
-
--- 手机端提示
-if Aimbot.IsMobile then
-    Tabs.AimTab:Paragraph({
-        Title = "📱 设备检测",
-        Desc = "检测到移动端，已自动切换为「一直自瞄」模式（无需按住触发键）",
-        Image = "smartphone",
-        ImageSize = 20
-    })
-end
-
--- 按住模式
-Tabs.AimTab:Toggle({
-    Title = "按住模式（长按触发键才自瞄）",
-    Icon = "check",
-    Default = false,
-    Callback = function(v)
-        if Aimbot.IsMobile then
-            Aimbot.HoldMode = false
-            WindUI:Notify({Title = "自瞄", Content = "移动端已强制一直自瞄", Duration = 3})
-            return
-        end
-        Aimbot.HoldMode = v
-        Aimbot.IsHolding = false
-    end
-})
-
--- 触发键选择
-Tabs.AimTab:Dropdown({
-    Title = "按住触发键",
-    Values = {"鼠标左键", "鼠标右键", "键盘键"},
-    Value = "鼠标右键",
-    Callback = function(v)
-        Aimbot.TriggerMode = v
-        Aimbot.IsHolding = false
-    end
-})
-
--- 自定义键盘键（默认Q，点击可重选）
-Tabs.AimTab:Keybind({
-    Title = "自定义键盘触发键（点击重选）",
-    Value = "Q",
-    CanChange = true,
-    Callback = function(key)
-        Aimbot.CustomKey = key
-        Aimbot.TriggerMode = "键盘键"
-        WindUI:Notify({Title = "自瞄", Content = "触发键已设为: " .. key, Duration = 2})
-    end
-})
-
--- FOV 圆圈大小
-Tabs.AimTab:Slider({
-    Title = "自瞄圆圈大小 (FOV)",
-    Step = 1,
-    Value = {Min = 0, Max = 600, Default = 150},
-    Callback = function(v)
-        Aimbot.FOV = v
-    end
-})
-
--- 显示圆圈（默认关闭！！）
-Tabs.AimTab:Toggle({
-    Title = "显示自瞄圆圈",
-    Icon = "check",
-    Default = false,  -- 默认关闭！
-    Callback = function(v)
-        Aimbot.ShowCircle = v
-        if not v then
-            if fovCircle then fovCircle.Visible = false end
-            if circleFrame then circleFrame.Visible = false end
-        end
-    end
-})
-
--- 彩虹圆圈
-Tabs.AimTab:Toggle({
-    Title = "彩虹圆圈颜色",
-    Icon = "check",
-    Default = false,
-    Callback = function(v)
-        Aimbot.RainbowCircle = v
-    end
-})
-
--- 圆圈自定义颜色
-Tabs.AimTab:Colorpicker({
-    Title = "圆圈颜色",
-    Default = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        Aimbot.CircleColor = color
-    end
-})
-
--- 墙壁检测
-Tabs.AimTab:Toggle({
-    Title = "墙壁检测（穿墙不打）",
-    Icon = "check",
-    Default = true,
-    Callback = function(v)
-        Aimbot.WallCheck = v
-    end
-})
-
--- 死亡检测
-Tabs.AimTab:Toggle({
-    Title = "死亡检测（跳过尸体）",
-    Icon = "check",
-    Default = true,
-    Callback = function(v)
-        Aimbot.DeadCheck = v
-    end
-})
-
--- 队友检测
-Tabs.AimTab:Toggle({
-    Title = "队友检测（跳过队友）",
-    Icon = "check",
-    Default = true,
-    Callback = function(v)
-        Aimbot.TeamCheck = v
-    end
-})
-
-Tabs.y:Divider()
-Tabs.y:Input({
-    Title = "范围",
-    Value = "800",
-    Placeholder = "输入攻击范围数值",
-    Callback = function(input)
-        attackRange = tonumber(input) or 800
-    end
-})
-Tabs.y:Toggle({
-    Title = "范围",
-    Icon = "check",
-    Default = false,
-    Callback = function(enabled)
-        local RunService = game:GetService("RunService")
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        local connection
-        attackRange = tonumber(attackRange) or 800
-
-        if enabled then
-            connection = RunService.RenderStepped:Connect(function()
-                if not lp.Character then return end
-                local raycastParams = RaycastParams.new()
-                raycastParams.FilterDescendantsInstances = {lp.Character}
-                raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
-                local camera = workspace.CurrentCamera
-                local center = camera.ViewportSize / 2
-                local ray = camera:ViewportPointToRay(center.X, center.Y)
-                local hitResult = workspace:Raycast(ray.Origin, ray.Direction * attackRange, raycastParams)
-
-                if hitResult then
-                    local hitModel = hitResult.Instance:FindFirstAncestorWhichIsA("Model")
-                    for _,plr in Players:GetPlayers() do
-                        if plr ~= lp and plr.Character == hitModel then
-                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-                            if hum and hum.Health > 0 then
-                                hum:TakeDamage(1)
-                            end
-                            break
-                        end
-                    end
-                end
-            end)
-        else
-            if connection then
-                connection:Disconnect()
-            end
-        end
-    end,
-})
-
-Tabs.AimTab:Toggle({
-    Title = "自瞄(朝向最近玩家头部)",
-    Icon = "check",
-    Default = false,
-    Callback = function(enabled)
-        local RunService = game:GetService("RunService")
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        local conn
-        if enabled then
-            conn = RunService.RenderStepped:Connect(function()
-                local char = lp.Character
-                if not char then return end
-                local root = char:FindFirstChild("HumanoidRootPart")
-                local hum = char:FindFirstChild("Humanoid")
-                if not root or not hum then return end
-
-                local nearestHead = nil
-                local shortestDis = math.huge
-
-                for _,player in Players:GetPlayers() do
-                    if player == lp then continue end
-                    local enemyChar = player.Character
-                    if not enemyChar then continue end
-                    local enemyRoot = enemyChar:FindFirstChild("HumanoidRootPart")
-                    local enemyHead = enemyChar:FindFirstChild("Head")
-                    if not enemyRoot or not enemyHead then continue end
-                    local dis = (root.Position - enemyRoot.Position).Magnitude
-                    if dis < shortestDis then
-                        shortestDis = dis
-                        nearestHead = enemyHead
-                    end
-                end
-
-                if nearestHead then
-                    root.CFrame = CFrame.new(root.Position, Vector3.new(nearestHead.Position.X, root.Position.Y, nearestHead.Position.Z))
-                end
-            end)
-        else
-            if conn then conn:Disconnect() end
-        end
-    end,
-})
 
 Tabs.AimTab:Button({
 	Title = "通用自瞄",
